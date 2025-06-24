@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 
 export default function PerformancePage() {
   const [metrics] = useState({
@@ -29,9 +30,12 @@ export default function PerformancePage() {
             <h2 className="text-xl font-bold text-gray-800">📣 Post Performance</h2>
             <p className="text-sm text-gray-500">Performance breakdown of recent posts</p>
           </div>
-          <button className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-700 transition">
+          <Link
+            href="/performance/add"
+            className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-700 transition"
+          >
             + Add Post
-          </button>
+          </Link>
         </div>
 
         <div className="overflow-auto rounded-lg border">

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 
 const contracts = [
   {
@@ -48,9 +49,12 @@ export default function ContractsPage() {
           <h1 className="text-2xl font-bold text-gray-800">📑 Contract Management</h1>
           <p className="text-sm text-gray-500">Upload and track your agreements.</p>
         </div>
-        <button className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition">
+        <Link
+          href="/contracts/upload"
+          className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm hover:bg-indigo-700 transition"
+        >
           Upload Contract
-        </button>
+        </Link>
       </div>
 
       {/* Table */}
@@ -86,6 +90,6 @@ export default function ContractsPage() {
           </tbody>
         </table>
       </div>
-    </div>
+    </div> // ← now this wraps the entire layout
   );
 }
