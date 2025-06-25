@@ -2,15 +2,20 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useContracts } from '../../../context/ContractContext';
 
 export default function UploadContractPage() {
   const router = useRouter();
+  const { addContract } = useContracts();
+
   const [form, setForm] = useState({
     brand: '',
     dealId: '',
     notes: '',
+    payment: '',
+    startDate: '',
+    endDate: '',
   });
-  const [file, setFile] = useState<File | null>(null);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -18,16 +23,38 @@ export default function UploadContractPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setFile(e.target.files[0]);
-    }
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Uploading contract:', { ...form, file });
-    // TODO: Upload to Firebase Storage or Firestore
+
+    const formattedDates =
+      form.startDate && form.endDate
+        ? `${form.startDate} – ${form.endDate}`
+        : 'N/A';
+
+    const formattedPayment = form.payment
+      ? `$${Number(form.payment).toLocaleString()}`
+      : 'N/A';
+
+    const now = new Date();
+    const readableTimestamp = now
+      .toISOString()
+      .replace('T', '_')
+      .replace(/:/g, '-')
+      .split('.')[0]; // strips milliseconds
+
+    const safeBrand = form.brand.trim().replace(/\s+/g, '_') || 'Contract';
+    const fileName = `${safeBrand}_${readableTimestamp}.pdf`;
+
+    const newContract = {
+      brand: form.brand,
+      dealId: form.dealId,
+      notes: form.notes,
+      dates: formattedDates,
+      payment: formattedPayment,
+      fileName,
+    };
+
+    addContract(newContract);
     router.push('/contracts');
   };
 
@@ -47,6 +74,7 @@ export default function UploadContractPage() {
               value={(form as any)[field.name]}
               onChange={handleChange}
               placeholder={field.placeholder}
+              required={field.name === 'brand'}
               className="w-full mt-1 px-3 py-2 border rounded-md text-sm shadow-sm text-gray-800"
             />
           </div>
@@ -64,13 +92,41 @@ export default function UploadContractPage() {
           />
         </div>
 
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-600">Start Date</label>
+            <input
+              type="date"
+              name="startDate"
+              value={form.startDate}
+              onChange={handleChange}
+              className="w-full mt-1 px-3 py-2 border rounded-md text-sm text-gray-800"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-600">End Date</label>
+            <input
+              type="date"
+              name="endDate"
+              value={form.endDate}
+              onChange={handleChange}
+              className="w-full mt-1 px-3 py-2 border rounded-md text-sm text-gray-800"
+              required
+            />
+          </div>
+        </div>
+
         <div>
-          <label className="block text-sm font-medium text-gray-600">Upload PDF or Doc</label>
+          <label className="block text-sm font-medium text-gray-600">Payment Amount</label>
           <input
-            type="file"
-            accept=".pdf,.doc,.docx"
-            onChange={handleFileChange}
-            className="w-full mt-1 text-sm text-gray-700"
+            type="number"
+            name="payment"
+            value={form.payment}
+            onChange={handleChange}
+            placeholder="e.g. 1500"
+            className="w-full mt-1 px-3 py-2 border rounded-md text-sm shadow-sm text-gray-800"
+            required
           />
         </div>
 

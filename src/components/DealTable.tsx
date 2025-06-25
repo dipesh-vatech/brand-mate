@@ -1,48 +1,10 @@
+'use client';
+
+import { useDeals } from '../context/DealContext';
 import DealRow from './DealRow';
 
 export default function DealTable() {
-  const deals = [
-    {
-      brand: 'BrandFresh',
-      campaign: 'Summer Launch',
-      status: 'In Progress',
-      deliverables: '2 posts, 3 stories',
-      dueDate: 'Aug 15, 2024',
-      payment: '$1,500',
-    },
-    {
-      brand: 'TechGizmo',
-      campaign: 'Gadget Showcase',
-      status: 'Upcoming',
-      deliverables: '1 video review',
-      dueDate: 'Sep 1, 2024',
-      payment: '$2,500',
-    },
-    {
-      brand: 'EcoWear',
-      campaign: 'Green Collection',
-      status: 'Completed',
-      deliverables: '1 post, 1 story',
-      dueDate: 'July 20, 2024',
-      payment: '$800',
-    },
-    {
-      brand: 'FitFuel',
-      campaign: 'Protein Power',
-      status: 'Awaiting Payment',
-      deliverables: '3 posts',
-      dueDate: 'July 10, 2024',
-      payment: '$1,200',
-    },
-    {
-      brand: 'GourmetBox',
-      campaign: 'Recipe Challenge',
-      status: 'Overdue',
-      deliverables: '1 reel',
-      dueDate: 'July 1, 2024',
-      payment: '$950',
-    },
-  ];
+  const { deals } = useDeals();
 
   return (
     <div className="overflow-auto bg-white rounded-xl shadow-sm">
@@ -58,9 +20,15 @@ export default function DealTable() {
           </tr>
         </thead>
         <tbody>
-          {deals.map((deal) => (
-            <DealRow key={deal.campaign} {...deal} />
-          ))}
+          {deals.length > 0 ? (
+            deals.map((deal, idx) => <DealRow key={idx} deal={deal} />)
+          ) : (
+            <tr>
+              <td colSpan={6} className="text-center text-gray-400 py-6">
+                No deals yet.
+              </td>
+            </tr>
+          )}
         </tbody>
       </table>
     </div>

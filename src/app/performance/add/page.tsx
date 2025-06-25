@@ -2,9 +2,11 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { usePosts } from '../../../context/PostContext';
 
 export default function AddPostPage() {
   const router = useRouter();
+  const { addPost } = usePosts();
 
   const [form, setForm] = useState({
     post: '',
@@ -25,7 +27,17 @@ export default function AddPostPage() {
 
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Manual Post:', form);
+
+    const newPost = {
+      post: form.post,
+      platform: form.platform,
+      likes: Number(form.likes),
+      comments: Number(form.comments),
+      saves: Number(form.saves),
+      conversion: form.conversion,
+    };
+
+    addPost(newPost);
     router.push('/performance');
   };
 
@@ -38,13 +50,13 @@ export default function AddPostPage() {
     const simulatedPost = {
       post: `Auto-fetched: ${url}`,
       platform,
-      likes: Math.floor(Math.random() * 10000 + 1000).toString(),
-      comments: Math.floor(Math.random() * 800 + 50).toString(),
-      saves: Math.floor(Math.random() * 1500 + 100).toString(),
+      likes: Math.floor(Math.random() * 10000 + 1000),
+      comments: Math.floor(Math.random() * 800 + 50),
+      saves: Math.floor(Math.random() * 1500 + 100),
       conversion: Math.random() > 0.3 ? 'Yes' : 'No',
     };
 
-    console.log('Simulated Post:', simulatedPost);
+    addPost(simulatedPost);
     router.push('/performance');
   };
 

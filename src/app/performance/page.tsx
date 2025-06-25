@@ -1,15 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { usePosts } from '../../context/PostContext';
 import Link from 'next/link';
 
 export default function PerformancePage() {
-  const [metrics] = useState({
-    likes: 12045,
-    comments: 834,
-    saves: 1503,
-    conversion: true,
-  });
+  const { posts } = usePosts();
 
   return (
     <div className="flex flex-col gap-8">
@@ -51,49 +46,24 @@ export default function PerformancePage() {
               </tr>
             </thead>
             <tbody>
-              {[
-                {
-                  post: 'My new favorite gadget from TechGizmo',
-                  platform: 'Instagram',
-                  likes: 12045,
-                  comments: 834,
-                  saves: 1503,
-                  conversion: 'Yes',
-                },
-                {
-                  post: 'Unboxing the Summer Launch kit',
-                  platform: 'TikTok',
-                  likes: 250832,
-                  comments: 4892,
-                  saves: 5400,
-                  conversion: 'Yes',
-                },
-                {
-                  post: 'Styling the new EcoWear line',
-                  platform: 'YouTube',
-                  likes: 8023,
-                  comments: 1203,
-                  saves: 980,
-                  conversion: 'Yes',
-                },
-                {
-                  post: 'Protein shake secrets with FitFuel',
-                  platform: 'Instagram',
-                  likes: 9876,
-                  comments: 543,
-                  saves: 1100,
-                  conversion: 'Yes',
-                },
-              ].map((row, idx) => (
-                <tr key={idx} className="hover:bg-gray-50 transition">
-                  <td className="px-4 py-3 font-medium text-gray-900">{row.post}</td>
-                  <td className="px-4">{row.platform}</td>
-                  <td className="px-4 font-semibold text-indigo-600">{row.likes.toLocaleString()}</td>
-                  <td className="px-4">{row.comments.toLocaleString()}</td>
-                  <td className="px-4">{row.saves.toLocaleString()}</td>
-                  <td className="px-4 text-green-600 font-medium">{row.conversion}</td>
+              {posts.length > 0 ? (
+                posts.map((row, idx) => (
+                  <tr key={idx} className="hover:bg-gray-50 transition">
+                    <td className="px-4 py-3 font-medium text-gray-900">{row.post}</td>
+                    <td className="px-4">{row.platform}</td>
+                    <td className="px-4 font-semibold text-indigo-600">{row.likes.toLocaleString()}</td>
+                    <td className="px-4">{row.comments.toLocaleString()}</td>
+                    <td className="px-4">{row.saves.toLocaleString()}</td>
+                    <td className="px-4 text-green-600 font-medium">{row.conversion}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="px-4 py-6 text-center text-gray-400">
+                    No posts yet. Add one to get started!
+                  </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

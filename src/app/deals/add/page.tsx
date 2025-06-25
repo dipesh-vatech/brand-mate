@@ -2,9 +2,12 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useDeals } from '../../../context/DealContext';
 
 export default function AddDealPage() {
   const router = useRouter();
+  const { addDeal } = useDeals();
+
   const [form, setForm] = useState({
     brand: '',
     platform: '',
@@ -23,7 +26,17 @@ export default function AddDealPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('New Deal:', form);
+
+    const formattedPayment = form.payment
+      ? `$${Number(form.payment).toLocaleString()}`
+      : 'N/A';
+
+    const newDeal = {
+      ...form,
+      payment: formattedPayment,
+    };
+
+    addDeal(newDeal);
     router.push('/deals');
   };
 
@@ -36,12 +49,10 @@ export default function AddDealPage() {
           { label: 'Platform', name: 'platform', placeholder: 'e.g. Instagram' },
           { label: 'Start Date', name: 'startDate', type: 'date' },
           { label: 'End Date', name: 'endDate', type: 'date' },
-          { label: 'Payment', name: 'payment', placeholder: 'e.g. $2500' },
+          { label: 'Payment', name: 'payment', placeholder: 'e.g. 2500', type: 'number' },
         ].map((field) => (
           <div key={field.name}>
-            <label className="block text-sm font-medium text-gray-600">
-              {field.label}
-            </label>
+            <label className="block text-sm font-medium text-gray-600">{field.label}</label>
             <input
               type={field.type || 'text'}
               name={field.name}

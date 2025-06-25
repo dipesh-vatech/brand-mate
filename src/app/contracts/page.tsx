@@ -1,38 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useContracts } from '../../context/ContractContext';
 import Link from 'next/link';
-
-const contracts = [
-  {
-    file: 'BrandFresh_Summer_Contract.pdf',
-    status: 'Done',
-    brand: 'BrandFresh',
-    dates: '2024-07-01 - 2024-08-15',
-    payment: '$1,500',
-  },
-  {
-    file: 'TechGizmo_Q3_Agreement.pdf',
-    status: 'Done',
-    brand: 'TechGizmo',
-    dates: '2024-08-01 - 2024-09-01',
-    payment: '$2,500',
-  },
-  {
-    file: 'new_deal_terms.pdf',
-    status: 'Processing',
-    brand: 'N/A',
-    dates: 'N/A',
-    payment: 'N/A',
-  },
-  {
-    file: 'old_contract.pdf',
-    status: 'Error',
-    brand: 'N/A',
-    dates: 'N/A',
-    payment: 'N/A',
-  },
-];
 
 const statusColors: Record<string, string> = {
   Done: 'bg-green-100 text-green-800',
@@ -41,6 +10,8 @@ const statusColors: Record<string, string> = {
 };
 
 export default function ContractsPage() {
+  const { contracts } = useContracts();
+
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
@@ -70,26 +41,34 @@ export default function ContractsPage() {
             </tr>
           </thead>
           <tbody>
-            {contracts.map((c) => (
-              <tr key={c.file} className="hover:bg-gray-50 transition">
-                <td className="px-4 py-3 font-medium text-indigo-600 hover:underline cursor-pointer">
-                  {c.file}
+            {contracts.length > 0 ? (
+              contracts.map((c, idx) => (
+                <tr key={idx} className="hover:bg-gray-50 transition">
+                  <td className="px-4 py-3 font-medium text-indigo-600 hover:underline cursor-pointer">
+                    {c.fileName || 'Untitled_Contract.pdf'}
+                  </td>
+                  <td className="px-4">
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors['Processing']}`}
+                    >
+                      Processing
+                    </span>
+                  </td>
+                  <td className="px-4">{c.brand || 'N/A'}</td>
+                  <td className="px-4">{c.dates || 'N/A'}</td>
+                  <td className="px-4 font-semibold">{c.payment || 'N/A'}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={5} className="px-4 py-6 text-center text-gray-400">
+                  No contracts uploaded yet.
                 </td>
-                <td className="px-4">
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[c.status]}`}
-                  >
-                    {c.status}
-                  </span>
-                </td>
-                <td className="px-4">{c.brand}</td>
-                <td className="px-4">{c.dates}</td>
-                <td className="px-4 font-semibold">{c.payment}</td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
-    </div> // ← now this wraps the entire layout
+    </div>
   );
 }
