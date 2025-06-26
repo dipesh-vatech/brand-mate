@@ -1,8 +1,13 @@
+'use client';
+
+import { useState } from 'react';
 import DealTable from '../../components/DealTable';
 import FilterBar from '../../components/FilterBar';
 import Link from 'next/link';
 
 export default function DealsPage() {
+  const [statusFilter, setStatusFilter] = useState<string>('All');
+
   return (
     <div className="flex flex-col gap-6">
       {/* Header */}
@@ -17,10 +22,13 @@ export default function DealsPage() {
       </div>
 
       {/* Filters */}
-      <FilterBar />
+      <FilterBar
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+      />
 
       {/* Table */}
-      <DealTable />
+      <DealTable statusFilter={statusFilter} />
     </div>
   );
 }

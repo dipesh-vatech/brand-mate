@@ -6,9 +6,12 @@ type Deal = {
   deliverables: string;
   startDate: string;
   endDate: string;
-  payment: string;
+  payment: number;
   status: string;
 };
+
+const formatCurrency = (amount: number) =>
+  amount ? `$${amount.toLocaleString()}` : 'N/A';
 
 export default function DealRow({ deal }: { deal: Deal }) {
   const statusColor =
@@ -31,7 +34,7 @@ export default function DealRow({ deal }: { deal: Deal }) {
       </td>
       <td className="px-4">{deal.deliverables}</td>
       <td className="px-4">{deal.endDate || '—'}</td>
-      <td className="px-4 font-semibold">{deal.payment}</td>
+      <td className="px-4 font-semibold">{formatCurrency(deal.payment)}</td>
     </tr>
   );
 }

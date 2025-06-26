@@ -56,7 +56,9 @@ export default function ContractsPage() {
                   </td>
                   <td className="px-4">{c.brand || 'N/A'}</td>
                   <td className="px-4">{c.dates || 'N/A'}</td>
-                  <td className="px-4 font-semibold">{c.payment || 'N/A'}</td>
+                  <td className="px-4 font-semibold">
+                    {typeof c.payment === 'number' ? `$${c.payment.toLocaleString()}` : 'N/A'}
+                  </td>
                 </tr>
               ))
             ) : (

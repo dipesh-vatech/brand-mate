@@ -24,7 +24,7 @@ export default function AddDealPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const formattedPayment = form.payment
@@ -33,10 +33,10 @@ export default function AddDealPage() {
 
     const newDeal = {
       ...form,
-      payment: formattedPayment,
+      payment: parseFloat(form.payment),
     };
 
-    addDeal(newDeal);
+    await addDeal(newDeal); // ✅ ensure Supabase insert completes
     router.push('/deals');
   };
 
@@ -87,6 +87,9 @@ export default function AddDealPage() {
           >
             <option>Pending</option>
             <option>In Progress</option>
+            <option>Upcoming</option>
+            <option>Awaiting Payment</option>
+            <option>Overdue</option>
             <option>Completed</option>
           </select>
         </div>

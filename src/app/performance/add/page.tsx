@@ -25,7 +25,7 @@ export default function AddPostPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleManualSubmit = (e: React.FormEvent) => {
+  const handleManualSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const newPost = {
@@ -37,11 +37,11 @@ export default function AddPostPage() {
       conversion: form.conversion,
     };
 
-    addPost(newPost);
-    router.push('/performance');
+    await addPost(newPost); // ✅ wait for Supabase insert
+    router.push('/performance'); // ✅ then redirect
   };
 
-  const handleSimulateFetch = () => {
+  const handleSimulateFetch = async () => {
     if (!url.trim()) return;
 
     const platforms = ['Instagram', 'TikTok', 'YouTube'];
@@ -56,8 +56,8 @@ export default function AddPostPage() {
       conversion: Math.random() > 0.3 ? 'Yes' : 'No',
     };
 
-    addPost(simulatedPost);
-    router.push('/performance');
+    await addPost(simulatedPost); // ✅ ensure this completes
+    router.push('/performance');  // ✅ immediate sync on page
   };
 
   return (

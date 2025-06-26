@@ -23,7 +23,7 @@ export default function UploadContractPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const formattedDates =
@@ -31,9 +31,7 @@ export default function UploadContractPage() {
         ? `${form.startDate} – ${form.endDate}`
         : 'N/A';
 
-    const formattedPayment = form.payment
-      ? `$${Number(form.payment).toLocaleString()}`
-      : 'N/A';
+    const numericPayment = parseFloat(form.payment);
 
     const now = new Date();
     const readableTimestamp = now
@@ -50,12 +48,12 @@ export default function UploadContractPage() {
       dealId: form.dealId,
       notes: form.notes,
       dates: formattedDates,
-      payment: formattedPayment,
+      payment: numericPayment,
       fileName,
     };
 
-    addContract(newContract);
-    router.push('/contracts');
+    await addContract(newContract); // ✅ Wait for persistence
+    router.push('/contracts');      // ✅ Navigate after state update
   };
 
   return (

@@ -3,8 +3,17 @@
 import { useDeals } from '../context/DealContext';
 import DealRow from './DealRow';
 
-export default function DealTable() {
+type DealTableProps = {
+  statusFilter: string;
+};
+
+export default function DealTable({ statusFilter }: DealTableProps) {
   const { deals } = useDeals();
+
+  const filteredDeals =
+    statusFilter === 'All'
+      ? deals
+      : deals.filter((deal) => deal.status === statusFilter);
 
   return (
     <div className="overflow-auto bg-white rounded-xl shadow-sm">
@@ -20,12 +29,12 @@ export default function DealTable() {
           </tr>
         </thead>
         <tbody>
-          {deals.length > 0 ? (
-            deals.map((deal, idx) => <DealRow key={idx} deal={deal} />)
+          {filteredDeals.length > 0 ? (
+            filteredDeals.map((deal, idx) => <DealRow key={idx} deal={deal} />)
           ) : (
             <tr>
               <td colSpan={6} className="text-center text-gray-400 py-6">
-                No deals yet.
+                No deals match this filter.
               </td>
             </tr>
           )}

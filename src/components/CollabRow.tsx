@@ -1,15 +1,22 @@
-interface CollabRowProps {
+'use client';
+
+type CollabRowProps = {
   brandLogo: string;
   brandName: string;
   campaign: string;
   status: 'Active' | 'Completed' | 'Pending';
-  payment: string;
-}
+  payment: string | number;
+};
 
 const statusColors = {
   Active: 'bg-green-100 text-green-800',
   Completed: 'bg-gray-100 text-gray-800',
   Pending: 'bg-yellow-100 text-yellow-800',
+};
+
+const formatCurrency = (amount: string | number) => {
+  const num = typeof amount === 'number' ? amount : parseFloat(amount.replace(/[^0-9.-]+/g, ''));
+  return isNaN(num) ? 'N/A' : `$${num.toLocaleString()}`;
 };
 
 export default function CollabRow({
@@ -31,7 +38,7 @@ export default function CollabRow({
           {status}
         </span>
       </td>
-      <td className="px-4 font-semibold text-gray-700">{payment}</td>
+      <td className="px-4 font-semibold text-gray-700">{formatCurrency(payment)}</td>
       <td className="px-4 text-blue-600 hover:underline cursor-pointer">View</td>
     </tr>
   );
