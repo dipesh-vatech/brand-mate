@@ -3,14 +3,8 @@
 import { useContracts } from '../../context/ContractContext';
 import Link from 'next/link';
 
-const statusColors: Record<string, string> = {
-  Done: 'bg-green-100 text-green-800',
-  Processing: 'bg-yellow-100 text-yellow-800',
-  Error: 'bg-red-100 text-red-800',
-};
-
 export default function ContractsPage() {
-  const { contracts } = useContracts();
+  const { contracts, updateContractStatus } = useContracts(); // ⬅️ FIXED: now includes updateContractStatus
 
   return (
     <div className="flex flex-col gap-6">
@@ -48,11 +42,26 @@ export default function ContractsPage() {
                     {c.fileName || 'Untitled_Contract.pdf'}
                   </td>
                   <td className="px-4">
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors['Processing']}`}
+                    <select
+                      value={c.status}
+                      onChange={(e) => updateContractStatus(c.id!, e.target.value)}
+                      className={`text-sm font-medium px-3 py-1 rounded-full border bg-white transition
+                        ${
+                          c.status === 'Signed'
+                            ? 'bg-green-100 text-green-800 border-green-300'
+                            : c.status === 'Processing'
+                            ? 'bg-yellow-100 text-yellow-800 border-yellow-300'
+                            : c.status === 'Archived'
+                            ? 'bg-gray-100 text-gray-700 border-gray-300'
+                            : 'bg-white text-gray-700 border-gray-200'
+                        }`}
                     >
-                      Processing
-                    </span>
+                      {['Processing', 'Signed', 'Archived'].map((status) => (
+                        <option key={status} value={status}>
+                          {status}
+                        </option>
+                      ))}
+                    </select>
                   </td>
                   <td className="px-4">{c.brand || 'N/A'}</td>
                   <td className="px-4">{c.dates || 'N/A'}</td>

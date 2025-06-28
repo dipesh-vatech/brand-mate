@@ -11,12 +11,14 @@ type Contract = {
   fileName?: string;
   dates: string;
   payment: number;
+  status: string;
   created_at?: string;
 };
 
 type ContractContextType = {
   contracts: Contract[];
   addContract: (contract: Contract) => Promise<void>;
+  updateContractStatus: (id: string, status: string) => Promise<void>;
 };
 
 const ContractContext = createContext<ContractContextType | undefined>(undefined);
@@ -49,11 +51,24 @@ export function ContractProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    await fetchContracts(); // ⬅️ force refresh the contract list
+    await fetchContracts(); // refresh the list
+  };
+
+  const updateContractStatus = async (id: string, status: string) => {
+    const { error } = await supabase
+      .from('contracts')
+      .update({ status })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Failed to update contract status:', error.message);
+    } else {
+      await fetchContracts(); // ensure latest status is shown
+    }
   };
 
   return (
-    <ContractContext.Provider value={{ contracts, addContract }}>
+    <ContractContext.Provider value={{ contracts, addContract, updateContractStatus }}>
       {children}
     </ContractContext.Provider>
   );
