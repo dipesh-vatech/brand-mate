@@ -1,10 +1,11 @@
 'use client';
 
 import { usePosts } from '../../context/PostContext';
+import DeleteButton from '../../components/DeleteButton';
 import Link from 'next/link';
 
 export default function PerformancePage() {
-  const { posts } = usePosts();
+  const { posts, deletePost } = usePosts();
 
   return (
     <div className="flex flex-col gap-8">
@@ -55,6 +56,9 @@ export default function PerformancePage() {
                     <td className="px-4">{row.comments.toLocaleString()}</td>
                     <td className="px-4">{row.saves.toLocaleString()}</td>
                     <td className="px-4 text-green-600 font-medium">{row.conversion}</td>
+                    <td className="px-4">
+                      <DeleteButton onDelete={() => deletePost(row.id!)} label="post" />
+                    </td>
                   </tr>
                 ))
               ) : (

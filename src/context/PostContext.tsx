@@ -17,6 +17,7 @@ type Post = {
 type PostContextType = {
   posts: Post[];
   addPost: (post: Post) => Promise<void>;
+  deletePost: (id: string) => Promise<void>;
 };
 
 const PostContext = createContext<PostContextType | undefined>(undefined);
@@ -50,8 +51,17 @@ export function PostProvider({ children }: { children: ReactNode }) {
     await fetchPosts(); // Refresh after insert
   };
 
+  const deletePost = async (id: string) => {
+    const { error } = await supabase.from('posts').delete().eq('id', id);
+    if (error) {
+      console.error('Failed to delete post:', error.message);
+    } else {
+      await fetchPosts(); // or however you reload the data
+    }
+  };
+
   return (
-    <PostContext.Provider value={{ posts, addPost }}>
+    <PostContext.Provider value={{ posts, addPost, deletePost }}>
       {children}
     </PostContext.Provider>
   );

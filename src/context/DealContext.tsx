@@ -18,6 +18,7 @@ type DealContextType = {
   deals: Deal[];
   addDeal: (deal: Deal) => Promise<void>;
   updateDealStatus: (id: string, status: string) => Promise<void>;
+  deleteDeal: (id: string) => Promise<void>;
 };
 
 const DealContext = createContext<DealContextType | undefined>(undefined);
@@ -45,16 +46,51 @@ export function DealProvider({ children }: { children: ReactNode }) {
 
   // Add new deal
   const addDeal = async (deal: Deal) => {
-    const { data, error } = await supabase.from('deals').insert([deal]);
+    const { data, error } = await supabase
+      .from('deals')
+      .insert([deal])
+      .select('id, brand, platform, deliverables, startDate, endDate, payment, status');
 
     if (error) {
       console.error('Failed to insert deal:', error.message);
-      return;
+      return null;
     }
 
-    if (data) {
+    if (data && data.length > 0) {
       setDeals((prev) => [data[0], ...prev]);
+      return data[0].id;
     }
+
+    return null;
+  };
+
+  const deleteDeal = async (id: string) => {
+    const { data: contracts, error: fetchError } = await supabase
+      .from('contracts')
+      .select('id, fileName')
+      .eq('dealId', id);
+
+    if (fetchError) {
+      console.error('Error checking contracts:', fetchError.message);
+      throw new Error('Could not verify related contracts');
+    }
+
+    if (contracts.length > 0) {
+      throw {
+        message: `This deal has ${contracts.length} linked contract(s).`,
+        contracts: contracts.map((c) => ({
+          id: c.id,
+          fileName: c.fileName ?? `Contract ${c.id}`,
+        })),
+      };
+    }
+
+    const { error: deleteError } = await supabase.from('deals').delete().eq('id', id);
+    if (deleteError) {
+      console.error('Failed to delete deal:', deleteError.message);
+      throw new Error('Delete failed');
+    }
+    setDeals((prev) => prev.filter((deal) => deal.id !== id));
   };
 
   // ✅ New: Update deal status
@@ -82,7 +118,7 @@ export function DealProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <DealContext.Provider value={{ deals, addDeal, updateDealStatus }}>
+    <DealContext.Provider value={{ deals, addDeal, updateDealStatus, deleteDeal }}>
       {children}
     </DealContext.Provider>
   );

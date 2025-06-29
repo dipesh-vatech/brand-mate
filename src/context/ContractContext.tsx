@@ -19,6 +19,7 @@ type ContractContextType = {
   contracts: Contract[];
   addContract: (contract: Contract) => Promise<void>;
   updateContractStatus: (id: string, status: string) => Promise<void>;
+  deleteContract: (id: string) => Promise<void>;
 };
 
 const ContractContext = createContext<ContractContextType | undefined>(undefined);
@@ -54,6 +55,15 @@ export function ContractProvider({ children }: { children: ReactNode }) {
     await fetchContracts(); // refresh the list
   };
 
+  const deleteContract = async (id: string) => {
+    const { error } = await supabase.from('contracts').delete().eq('id', id);
+    if (error) {
+      console.error('Failed to delete contract:', error.message);
+    } else {
+      await fetchContracts();
+    }
+  };
+
   const updateContractStatus = async (id: string, status: string) => {
     const { error } = await supabase
       .from('contracts')
@@ -68,7 +78,7 @@ export function ContractProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ContractContext.Provider value={{ contracts, addContract, updateContractStatus }}>
+    <ContractContext.Provider value={{ contracts, addContract, updateContractStatus, deleteContract }}>
       {children}
     </ContractContext.Provider>
   );

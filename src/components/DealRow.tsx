@@ -1,6 +1,7 @@
 'use client';
 
 import { useDeals } from '../context/DealContext';
+import DeleteButton from './DeleteButton'; // ✅ Add this line
 
 type Deal = {
   id?: string;
@@ -25,7 +26,12 @@ const statusColors = {
 const formatCurrency = (amount: number) =>
   amount ? `$${amount.toLocaleString()}` : 'N/A';
 
-export default function DealRow({ deal }: { deal: Deal }) {
+type DealRowProps = {
+  deal: Deal;
+  onDelete: () => Promise<void>; // ✅ Accept delete handler
+};
+
+export default function DealRow({ deal, onDelete }: DealRowProps) {
   const { updateDealStatus } = useDeals();
 
   const handleStatusChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -63,6 +69,9 @@ export default function DealRow({ deal }: { deal: Deal }) {
       <td className="px-4">{deal.deliverables}</td>
       <td className="px-4">{deal.endDate || '—'}</td>
       <td className="px-4 font-semibold">{formatCurrency(deal.payment)}</td>
+      <td className="px-4">
+        <DeleteButton onDelete={onDelete} label="deal" />
+      </td>
     </tr>
   );
 }

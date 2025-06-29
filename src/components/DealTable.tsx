@@ -8,7 +8,7 @@ type DealTableProps = {
 };
 
 export default function DealTable({ statusFilter }: DealTableProps) {
-  const { deals } = useDeals();
+  const { deals, deleteDeal } = useDeals(); // ✅ now includes deleteDeal
 
   const filteredDeals =
     statusFilter === 'All'
@@ -26,14 +26,17 @@ export default function DealTable({ statusFilter }: DealTableProps) {
             <th className="px-4">Deliverables</th>
             <th className="px-4">Due Date</th>
             <th className="px-4">Payment</th>
+            <th className="px-4">{/* Delete icon column */}</th>
           </tr>
         </thead>
         <tbody>
           {filteredDeals.length > 0 ? (
-            filteredDeals.map((deal, idx) => <DealRow key={idx} deal={deal} />)
+            filteredDeals.map((deal, idx) => (
+              <DealRow key={idx} deal={deal} onDelete={() => deleteDeal(deal.id!)} />
+            ))
           ) : (
             <tr>
-              <td colSpan={6} className="text-center text-gray-400 py-6">
+              <td colSpan={7} className="text-center text-gray-400 py-6">
                 No deals match this filter.
               </td>
             </tr>

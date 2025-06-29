@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useContracts } from '../../../context/ContractContext';
+import { useDeals } from '../../../context/DealContext'; // ✅ use context instead of direct supabase
 import { supabase } from '../../../lib/supabaseClient';
 
 type DealOption = {
@@ -14,7 +15,9 @@ type DealOption = {
 export default function UploadContractPage() {
   const router = useRouter();
   const { addContract } = useContracts();
+  const { deals, addDeal } = useDeals(); // ✅ use context version
 
+  const [dealOptions, setDealOptions] = useState<DealOption[]>([]);
   const [form, setForm] = useState({
     brand: '',
     dealId: '',
@@ -25,59 +28,76 @@ export default function UploadContractPage() {
     status: 'Processing',
   });
 
-  const [dealOptions, setDealOptions] = useState<DealOption[]>([]);
+  const [newDeal, setNewDeal] = useState({
+    brand: '',
+    platform: '',
+    deliverables: '',
+    endDate: '',
+    payment: '',
+    status: 'Pending',
+  });
 
   useEffect(() => {
-    const fetchDeals = async () => {
-      const { data, error } = await supabase
-        .from('deals')
-        .select('id, brand, platform')
-        .order('created_at', { ascending: false });
-
-      if (error) console.error('Failed to fetch deals:', error.message);
-      else setDealOptions(data || []);
-    };
-
-    fetchDeals();
-  }, []);
+    setDealOptions(deals); // ✅ populate from DealContext
+  }, [deals]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    if (name === 'brand') setNewDeal((prev) => ({ ...prev, brand: value }));
+    if (name === 'payment') setNewDeal((prev) => ({ ...prev, payment: value }));
+    if (name === 'endDate') setNewDeal((prev) => ({ ...prev, endDate: value }));
+  };
+
+  const handleNewDealChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNewDeal((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    let finalDealId = form.dealId;
+
+    if (form.dealId === '__new__') {
+      const insertedId = await addDeal({
+        brand: newDeal.brand,
+        platform: newDeal.platform,
+        deliverables: newDeal.deliverables,
+        endDate: newDeal.endDate || form.endDate,
+        payment: parseFloat(newDeal.payment || form.payment),
+        status: newDeal.status || 'Pending',
+      });
+
+      if (!insertedId) {
+        alert('Failed to create new deal.');
+        return;
+      }
+
+      finalDealId = insertedId;
+    }
 
     const formattedDates =
       form.startDate && form.endDate
         ? `${form.startDate} – ${form.endDate}`
         : 'N/A';
 
-    const numericPayment = parseFloat(form.payment);
-
-    const now = new Date();
-    const readableTimestamp = now
-      .toISOString()
-      .replace('T', '_')
-      .replace(/:/g, '-')
-      .split('.')[0];
-
+    const timestamp = new Date().toISOString().replace('T', '_').replace(/:/g, '-').split('.')[0];
     const safeBrand = form.brand.trim().replace(/\s+/g, '_') || 'Contract';
-    const fileName = `${safeBrand}_${readableTimestamp}.pdf`;
+    const fileName = `${safeBrand}_${timestamp}.pdf`;
 
-    const newContract = {
+    await addContract({
       brand: form.brand,
-      dealId: form.dealId,
+      dealId: finalDealId,
       notes: form.notes,
       dates: formattedDates,
-      payment: numericPayment,
+      payment: parseFloat(form.payment),
       status: form.status,
       fileName,
-    };
+    });
 
-    await addContract(newContract);
     router.push('/contracts');
   };
 
@@ -85,6 +105,8 @@ export default function UploadContractPage() {
     <div className="max-w-xl mx-auto bg-white rounded-xl p-6 shadow-sm mt-8">
       <h2 className="text-2xl font-bold text-gray-800 mb-4">📄 Upload New Contract</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
+
+        {/* Brand */}
         <div>
           <label className="block text-sm font-medium text-gray-600">Brand</label>
           <input
@@ -92,12 +114,12 @@ export default function UploadContractPage() {
             name="brand"
             value={form.brand}
             onChange={handleChange}
-            placeholder="e.g. GlowSkin"
             required
-            className="w-full mt-1 px-3 py-2 border rounded-md text-sm shadow-sm text-gray-800"
+            className="w-full mt-1 px-3 py-2 border rounded-md text-sm text-gray-800"
           />
         </div>
 
+        {/* Deal dropdown */}
         <div>
           <label className="block text-sm font-medium text-gray-600">Linked Deal</label>
           <select
@@ -107,26 +129,55 @@ export default function UploadContractPage() {
             className="w-full mt-1 px-3 py-2 border rounded-md text-sm text-gray-800"
           >
             <option value="">Select a deal</option>
-            {dealOptions.map((deal) => (
-              <option key={deal.id} value={deal.id}>
-                {deal.brand} ({deal.platform})
+            {dealOptions.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.brand} ({d.platform})
               </option>
             ))}
+            <option value="__new__">＋ Create New Deal</option>
           </select>
         </div>
 
+        {/* Conditional new deal form */}
+        {form.dealId === '__new__' && (
+          <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-md space-y-2">
+            <p className="text-sm font-medium text-yellow-700">Creating new deal:</p>
+
+            <input
+              name="platform"
+              type="text"
+              placeholder="Platform"
+              value={newDeal.platform}
+              onChange={handleNewDealChange}
+              className="w-full px-3 py-2 border rounded-md text-sm text-gray-800"
+              required
+            />
+
+            <input
+              name="deliverables"
+              type="text"
+              placeholder="Deliverables"
+              value={newDeal.deliverables}
+              onChange={handleNewDealChange}
+              className="w-full px-3 py-2 border rounded-md text-sm text-gray-800"
+              required
+            />
+          </div>
+        )}
+
+        {/* Notes */}
         <div>
-          <label className="block text-sm font-medium text-gray-600">Add Notes</label>
+          <label className="block text-sm font-medium text-gray-600">Notes</label>
           <textarea
             name="notes"
             value={form.notes}
             onChange={handleChange}
             rows={3}
-            placeholder="Optional notes about this contract..."
-            className="w-full mt-1 px-3 py-2 border rounded-md text-sm shadow-sm text-gray-800"
+            className="w-full mt-1 px-3 py-2 border rounded-md text-sm text-gray-800"
           />
         </div>
 
+        {/* Dates */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-600">Start Date</label>
@@ -135,8 +186,8 @@ export default function UploadContractPage() {
               name="startDate"
               value={form.startDate}
               onChange={handleChange}
-              className="w-full mt-1 px-3 py-2 border rounded-md text-sm text-gray-800"
               required
+              className="w-full mt-1 px-3 py-2 border rounded-md text-sm text-gray-800"
             />
           </div>
           <div>
@@ -146,12 +197,13 @@ export default function UploadContractPage() {
               name="endDate"
               value={form.endDate}
               onChange={handleChange}
-              className="w-full mt-1 px-3 py-2 border rounded-md text-sm text-gray-800"
               required
+              className="w-full mt-1 px-3 py-2 border rounded-md text-sm text-gray-800"
             />
           </div>
         </div>
 
+        {/* Payment */}
         <div>
           <label className="block text-sm font-medium text-gray-600">Payment Amount</label>
           <input
@@ -160,13 +212,14 @@ export default function UploadContractPage() {
             value={form.payment}
             onChange={handleChange}
             placeholder="e.g. 1500"
-            className="w-full mt-1 px-3 py-2 border rounded-md text-sm shadow-sm text-gray-800"
             required
+            className="w-full mt-1 px-3 py-2 border rounded-md text-sm text-gray-800"
           />
         </div>
 
+        {/* Status */}
         <div>
-          <label className="block text-sm font-medium text-gray-600">Status</label>
+          <label className="block text-sm font-medium text-gray-600">Contract Status</label>
           <select
             name="status"
             value={form.status}
@@ -179,6 +232,7 @@ export default function UploadContractPage() {
           </select>
         </div>
 
+        {/* Actions */}
         <div className="flex justify-end gap-3 pt-4">
           <button
             type="button"
